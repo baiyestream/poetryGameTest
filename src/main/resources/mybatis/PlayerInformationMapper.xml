@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.PlayInformationMapper">
+
+    <resultMap id="PlayInformationMapper" type="com.poetrygame.pojo.PlayerInformation">
+        <result property="playerId" column="player_id"/>
+        <result property="aliasName" column="alias_name"/>
+        <result property="weixinId" column="weixin_id"/>
+        <result property="registeTime" column="registe_time"/>
+        <result property="playerLevel" column="player_level"/>
+        <result property="lifeCount" column="life_count"/>
+        <result property="lifeLimit" column="life_limit"/>
+        <result property="restPrompt" column="rest_prompt"/>
+        <result property="exitTime" column="exit_time"/>
+        <result property="playerBuildingId" column="player_building_id"/>
+        <result property="password" column="password"/>
+        <result property="realName" column="real_name"/>
+        <result property="sex" column="sex"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="idCardNumber" column="id_card_number"/>
+        <result property="status" column="status"/>
+        <result property="warnTimes" column="warn_times"/>
+        <result property="activeValue" column="active_value"/>
+    </resultMap>
+
+
+    <!-- 用户第一次登录，请求获得登录id-->
+    <insert id="insert" parameterType="com.poetrygame.pojo.PlayerInformation">
+        insert into  poetry_game.tbl_player_information(alias_name,weixin_id,registe_time,life_count,life_limit)
+        values (#{aliasName},#{weixinId},#{registeTime},#{lifeCount},#{lifeLimit});
+    </insert>
+
+    <!-- 测试:登录接口 -->
+    <insert id="insertTest" parameterType="com.poetrygame.pojo.PlayerInformation">
+        insert into poetry_game.tbl_player_information(weixin_id,registe_time,life_count,life_limit)
+        values (#{weixinId},#{registeTime},#{lifeCount},#{lifeLimit})
+    </insert>
+
+    <!-- 测试：查询openId返回给前端 -->
+    <select id="openId" parameterType="com.poetrygame.pojo.PlayerInformation" resultType="string">
+        select weixin_id from poetry_game.tbl_player_information where weixin_id = #{weixinId}
+    </select>
+    
+    <!-- 测试：获取玩家昵称，并将玩家昵称保存到数据库 -->
+<!--    <insert id="saveAliasName" parameterType="com.poetrygame.pojo.PlayerInformation">-->
+<!--        insert into poetry_game.tbl_player_information(alias_name)-->
+<!--        values (#{aliasName})-->
+<!--        where `weixin_id` = #{weixinId}-->
+<!--    </insert>-->
+
+    <update id="saveAliasName" parameterType="com.poetrygame.pojo.PlayerInformation">
+        update poetry_game.tbl_player_information
+        set alias_name = #{aliasName}
+        where player_id = #{playerId}
+    </update>
+
+
+</mapper>
