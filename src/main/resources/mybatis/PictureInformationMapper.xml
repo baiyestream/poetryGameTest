@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.PictureInformationMapper">
+
+<!--    <select id="getPhoto" parameterType="com.poetrygame.pojo.PictureInformation" resultMap="map">-->
+<!--        select picture_name,saved_addr from poetry_game.the_picture_information where picture_name = '首页'-->
+<!--    </select>-->
+
+</mapper>

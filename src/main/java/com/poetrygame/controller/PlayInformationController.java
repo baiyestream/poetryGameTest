@@ -7,8 +7,10 @@ import com.poetrygame.config.WeChatConfig;
 import com.poetrygame.pojo.PlayerInformation;
 import com.poetrygame.pojo.TokenModel;
 import com.poetrygame.service.PlayerInformationService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ import java.util.Map;
  * @Description:
  */
 
+@Api(tags = "玩家模块")
 @RestController
 @RequestMapping("/playInformation")
 @CrossOrigin
@@ -40,18 +43,13 @@ public class PlayInformationController {
     @Autowired
     private WeChatConfig weChatConfig;
 
-    // 测试接口
-    @PostMapping("/test")
-    public String test(){
-        return "123";
-    }
-
     // 测试:获取玩家昵称
     @ApiImplicitParams({
             //参数效验
             @ApiImplicitParam(name="aliasName",value = "玩家昵称",required = true,paramType="string"),
             @ApiImplicitParam(name="openId",value = "openId",required = true,paramType = "string")
     })
+    @ApiOperation(value = "通过openId将玩家昵称存入数据库")
     @PostMapping("/getNickname")
     public R<String> getNickname(String aliasName, String openId){
 
@@ -76,6 +74,7 @@ public class PlayInformationController {
             //参数效验
             @ApiImplicitParam(name="code",value="授权码",required=true,paramType="form"),
     })
+    @ApiOperation(value = "微信扫码登录")
     @PostMapping("/login")
     public R<Map<String, String>> appletsLogin(@RequestBody TokenModel tokenModel) {
 

@@ -19,3 +19,8 @@ mybatis-plus:
   #  type-aliases-package: com.example.pojo  #??
   mapper-locations: classpath:/mybatis/*.xml # xml??
 
+# app图片存放路径
+picture:
+  path: D:\picture\appPicture\
+
+

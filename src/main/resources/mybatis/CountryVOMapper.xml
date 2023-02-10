@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.CountryVoMapper">
+
+    <resultMap id="CountryVO" type="com.poetrygame.vo.CountryVO">
+        <result property="cityId" column="city_id" />
+        <result property="positionX" column="position_x"/>
+        <result property="positionY" column="position_y"/>
+        <result property="savedAddr" column="saved_addr"/>
+    </resultMap>
+    <!-- 查找图片在云服务器上的位置-->
+    <select id="pictureLocation"  resultType="string" >
+        SELECT DISTINCT
+            poetry_game.tbl_picture_inforamtion.saved_addr
+        FROM
+            poetry_game.tbl_picture_inforamtion,
+            poetry_game.tbl_city_map,
+            tbl_country_and_city
+        WHERE
+                poetry_game.tbl_picture_inforamtion.picture_id = poetry_game.tbl_city_map.picture_id
+          AND poetry_game.tbl_city_map.city_id = poetry_game.tbl_country_and_city.city_id
+    </select>
+    <!-- 查找国家地图上有城市的坐标点,横轴坐标，纵轴坐标，城市ID -->
+    <select id="cityPoint" resultMap="CountryVO">
+        SELECT
+            poetry_game.tbl_city_map.city_id,
+            poetry_game.tbl_country_and_city.position_x,
+            poetry_game.tbl_country_and_city.position_y
+        FROM
+            poetry_game.tbl_picture_inforamtion,
+            poetry_game.tbl_city_map,
+            tbl_country_and_city
+        WHERE
+            poetry_game.tbl_picture_inforamtion.picture_id = poetry_game.tbl_city_map.picture_id
+          AND poetry_game.tbl_city_map.city_id = poetry_game.tbl_country_and_city.city_id
+    </select>
+
+
+    <resultMap id="Country" type="com.poetrygame.pojo.countryMap">
+        <result property="gridStartX" column="grid_start_x" />
+        <result property="gridStartY" column="grid_start_y"/>
+        <result property="gridWidth" column="grid_width"/>
+        <result property="gridHeight" column="grid_height"/>
+        <result property="gridRows" column="grid_rows"/>
+        <result property="gridColumns" column="grid_columns"/>
+    </resultMap>
+    <!-- 查找国家地图上的6个坐标 -->
+    <select id="point" resultMap="Country">
+        SELECT
+            poetry_game.tbl_country_map.grid_start_x,
+            poetry_game.tbl_country_map.grid_start_y,
+            poetry_game.tbl_country_map.grid_width,
+            poetry_game.tbl_country_map.grid_height,
+            poetry_game.tbl_country_map.grid_rows,
+            poetry_game.tbl_country_map.grid_columns
+        FROM
+            poetry_game.tbl_country_map
+    </select>
+</mapper>
