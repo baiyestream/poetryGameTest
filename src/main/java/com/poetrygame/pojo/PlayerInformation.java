@@ -40,9 +40,8 @@ public class PlayerInformation implements Serializable {
     private String realName;
     private Integer sex;
     private String phoneNumber;
-    private Character idCardNumber;
+    private String idCardNumber;
     private Integer status;
     private Integer warnTimes;
     private Integer activeValue;
-
 }

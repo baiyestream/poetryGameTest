@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.topicPlayDetailMapper">
+
+    <!-- 批量插入:将playerBuildingId,topicId,topicStatus插入到玩家题目明细表,长度为对应建筑物的题目容量 -->
+    <insert id="insertBatch" parameterType="list">
+        INSERT INTO poetry_game.tbl_topic_play_detail
+        (player_building_id,topic_id,player_id,topic_status)
+        VALUES
+        <foreach collection ="list" item="topic" separator =",">
+            (#{topic.playerBuildingId}, #{topic.topicId}, #{topic.playerId},#{topic.topicStatus})
+        </foreach >
+    </insert>
+
+    
+    <!-- 根据玩家题目明细表的玩家建筑id，题目id,玩家id来查出唯一玩家题目id-->
+    <select id="selectPlayTopicId" resultType="Long">
+        SELECT
+            tbl_topic_play_detail.player_topic_id
+        FROM
+            poetry_game.tbl_topic_play_detail
+        WHERE
+            tbl_topic_play_detail.player_id = #{playerId}
+          AND tbl_topic_play_detail.player_building_id = #{playerBuildingId}
+          AND tbl_topic_play_detail.topic_id = #{topicId}
+    </select>
+
+    <!-- 将题目的具体信息更新到数据库 -->
+    <update id="updateTopic" >
+        UPDATE tbl_topic_play_detail
+        SET topic_status = #{topicStatus},
+            start_time = #{startTime},
+            used_time = #{usedTime}
+        WHERE
+            tbl_topic_play_detail.player_topic_id = #{playerTopicId}
+    </update>
+    
+    <select id="isExist" resultType="Integer">
+        SELECT 1 FROM tbl_topic_play_detail WHERE player_id = #{playerId} LIMIT 1
+    </select>
+    
+    <!--  查询玩家是否完成所有题目-->
+    <select id="undoneCount" resultType="Integer">
+        SELECT
+            count(*) as undoneCount
+        FROM
+            tbl_topic_play_detail
+        WHERE
+            player_id = #{playerId}
+          AND topic_status = 0
+
+    </select>
+
+</mapper>

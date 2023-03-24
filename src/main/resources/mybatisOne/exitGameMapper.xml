@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.exitGameMapper">
+
+    <update id="updateLimit" parameterType="com.poetrygame.dto.exitGame">
+        UPDATE poetry_game.tbl_player_information
+        SET exit_time = #{exitTime},life_count = #{lifeCount}
+        WHERE
+            tbl_player_information.weixin_id = #{weixinId}
+    </update>
+</mapper>

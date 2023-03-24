@@ -33,15 +33,19 @@ public class PlayerInformationServiceImpl extends ServiceImpl<PlayInformationMap
     }
     // 测试：查询openId返回给前端
     @Override
-    public String getOpenId(String openId) {
+    public Long getOpenId(String openId) {
         return playInformationMapper.openId(openId);
     }
     // 测试：获取玩家昵称，并将玩家昵称保存到数据库
     @Override
-    public int getSaveAliasName(String aliasName,Long playerId) {
-        return playInformationMapper.saveAliasName(aliasName,playerId);
+    public int getSaveAliasName(String aliasName,String weixinId) {
+        return playInformationMapper.saveAliasName(aliasName,weixinId);
     }
 
+    @Override
+    public PlayerInformation getLifeInformation(String weixinId) {
+        return playInformationMapper.lifeInformation(weixinId);
+    }
 
 
 

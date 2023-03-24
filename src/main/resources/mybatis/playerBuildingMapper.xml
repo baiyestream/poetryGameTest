@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.playerBuildingMapper">
+
+    <!-- 将cityBuildingId,playerId,topicLimit,doneTopic插入到玩家游历建筑表 -->
+    <insert id="insert" parameterType="com.poetrygame.pojo.playerBuilding">
+        INSERT INTO poetry_game.tbl_player_building (city_building_id, player_id, topic_count, done_topic )
+        VALUES
+        (#{cityBuildingId},#{playerId},#{topicCount},#{doneTopic})
+    </insert>
+
+    <insert id="insertBatch" parameterType="list">
+        INSERT INTO poetry_game.tbl_player_building
+        (city_building_id,player_id,topic_count,done_topic)
+        VALUES
+        <foreach collection ="list" item="topic" separator =",">
+            (#{topic.cityBuildingId}, #{topic.playerId}, #{topic.topicCount},#{topic.doneTopic})
+        </foreach >
+    </insert>
+
+    <!-- 当数据插入到玩家遍历建筑表后，根据player_id查询player_building_id -->
+    <select id="playerBuildingId" resultType="Integer">
+        select
+            poetry_game.tbl_player_building.player_building_id
+        from
+            poetry_game.tbl_player_building
+        where
+            tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <resultMap id="playerBuilding" type="com.poetrygame.pojo.playerBuilding">
+        <result property="playerBuildingId" column="player_building_id"/>
+        <result property="topicCount" column="topic_count"/>
+    </resultMap>
+
+    <select id="playerBuildingTest" resultMap="playerBuilding">
+        select
+            tbl_player_building.player_building_id,
+            tbl_player_building.topic_count
+        from
+            poetry_game.tbl_player_building
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+
+    </select>
+
+    <select id="topicCount" parameterType="com.poetrygame.pojo.playerBuilding" resultType="Integer">
+        SELECT
+            sum( topic_count )
+        FROM
+            tbl_player_building
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <select id="topicNumber" parameterType="com.poetrygame.pojo.playerBuilding" resultType="Integer">
+        SELECT
+            count( topic_count )
+        FROM
+            tbl_player_building
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.playerBuildingIdMapper">
+
+    <resultMap id="playerBuildingIdMapper" type="com.poetrygame.dto.playerBuildingId">
+        <result property="playerBuildingId" column="player_building_id"/>
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="topicCount" column="topic_count"/>
+        <result property="doneTopic" column="done_topic"/>
+        <result property="playerId" column="player_id"/>
+        <result property="countryId" column="country_id"/>
+        <result property="buildingId" column="building_id"/>
+    </resultMap>
+
+    <select id="playerBuildingId" resultMap="playerBuildingIdMapper">
+        SELECT
+            player_building_id
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_player_building.city_building_id = tbl_city_and_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_city_and_building.city_id = tbl_country_and_city.city_id
+        WHERE
+            tbl_player_building.topic_count != tbl_player_building.done_topic
+          AND tbl_player_building.player_id = #{playerId}
+        ORDER BY
+            tbl_country_and_city.country_id,
+            tbl_country_and_city.city_id,
+            tbl_city_and_building.building_id
+        LIMIT 1
+    </select>
+
+</mapper>

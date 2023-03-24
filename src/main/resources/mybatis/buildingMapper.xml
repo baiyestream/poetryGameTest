@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.buildingMapper">
+
+    <!-- 根据buildingId在建筑表中取出容纳的题目数-->
+    <select id="topicLimit" resultType="Integer">
+        SELECT
+            poetry_game.tbl_building.topic_limit
+        FROM
+            poetry_game.tbl_building
+        WHERE
+            tbl_building.building_id = #{buildingId}
+    </select>
+
+    <!-- 根据buildingId取出建筑名称-->
+    <select id="buildingName" resultType="String">
+        SELECT
+            tbl_building.building_name
+        FROM
+            poetry_game.tbl_building
+        WHERE
+            tbl_building.building_id = #{buildingId}
+    </select>
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.gisInformationMapper">
+
+    <resultMap id="gisInformationMapper" type="com.poetrygame.dto.gisInformation">
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="countryCityId" column="country_city_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="countryId" column="country_id"/>
+        <result property="buildingName" column="building_name"/>
+        <result property="countryName" column="country_name"/>
+        <result property="cityName" column="city_name"/>
+        <result property="playerBuildingId" column="player_building_id"/>
+        <result property="topicId" column="topicId"/>
+        <result property="topicStatus" column="topicStatus"/>
+        <result property="playerTopicId" column="player_topic_id"/>
+        <result property="content" column="content"/>
+    </resultMap>
+
+    <select id="gisInformation" resultMap="gisInformationMapper">
+        SELECT
+            tbl_city_and_building.city_id,
+            tbl_city_and_building.building_id,
+            tbl_country_and_city.country_id,
+            tbl_building.building_name,
+            tbl_country_map.country_name,
+            tbl_city_map.city_name,
+            tbl_topic_play_detail.player_topic_id,
+            tbl_topic_information.content
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_player_building.city_building_id = tbl_city_and_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+                LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                LEFT JOIN tbl_country_map ON tbl_country_map.country_id = tbl_country_and_city.country_id
+                LEFT JOIN tbl_city_map ON tbl_city_map.city_id = tbl_country_and_city.city_id
+                LEFT JOIN tbl_topic_play_detail ON tbl_topic_play_detail.player_building_id = tbl_player_building.player_building_id
+                LEFT JOIN tbl_topic_information ON tbl_topic_information.topic_id = tbl_topic_play_detail.topic_id
+        WHERE
+            tbl_player_building.player_building_id = #{playerBuildingId}
+          AND tbl_topic_play_detail.topic_status = 0
+        LIMIT 1
+    </select>
+
+
+    <select id="gisInformationForMap" resultMap="gisInformationMapper">
+        SELECT
+            tbl_city_and_building.city_id,
+            tbl_city_and_building.building_id,
+            tbl_country_and_city.country_id,
+            tbl_building.building_name,
+            tbl_country_map.country_name,
+            tbl_city_map.city_name,
+            tbl_topic_play_detail.player_topic_id,
+            tbl_topic_information.content
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_player_building.city_building_id = tbl_city_and_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+                LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                LEFT JOIN tbl_country_map ON tbl_country_map.country_id = tbl_country_and_city.country_id
+                LEFT JOIN tbl_city_map ON tbl_city_map.city_id = tbl_country_and_city.city_id
+                LEFT JOIN tbl_topic_play_detail ON tbl_topic_play_detail.player_building_id = tbl_player_building.player_building_id
+                LEFT JOIN tbl_topic_information ON tbl_topic_information.topic_id = tbl_topic_play_detail.topic_id
+        WHERE
+            tbl_player_building.player_building_id = #{playerBuildingId}
+          AND tbl_topic_play_detail.topic_status = 0
+          and tbl_building.building_id = #{buildingId}
+          and tbl_city_map.city_id = #{cityId}
+          and tbl_country_map.country_id = #{countryId}
+        LIMIT 1
+    </select>
+
+</mapper>

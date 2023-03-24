@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.topicSumMapper">
+
+    <resultMap id="topicSumMapper" type="com.poetrygame.dto.topicSum">
+        <result property="totalSum" column="total_sum"/>
+        <result property="playerBuildingId" column="player_building_id"/>
+        <result property="topicStatus" column="topic_status"/>
+        <result property="playerTopicId" column="player_topic_id"/>
+    </resultMap>
+
+    <!-- 查询该用户在当前建筑已经答过的题目数量 -->
+    <select id="topicSum" resultMap="topicSumMapper">
+        SELECT
+            count( topic_status ) AS total_sum
+        FROM
+            tbl_topic_play_detail
+                LEFT JOIN tbl_player_building ON tbl_player_building.player_building_id = tbl_topic_play_detail.player_building_id
+        WHERE
+            tbl_topic_play_detail.topic_status = 1
+          AND tbl_topic_play_detail.player_building_id = (
+            SELECT
+                tbl_topic_play_detail.player_building_id
+            FROM
+                poetry_game.tbl_topic_play_detail
+            WHERE
+                tbl_topic_play_detail.player_topic_id = #{playerTopicId}
+        )
+    </select>
+
+    <!-- 查询该用户在当前建筑没有答过的题目 -->
+    <select id="topicSumNull" resultMap="topicSumMapper">
+        SELECT
+            count( topic_status ) AS total_sum
+        FROM
+            tbl_topic_play_detail
+                LEFT JOIN tbl_player_building ON tbl_player_building.player_building_id = tbl_topic_play_detail.player_building_id
+        WHERE
+            tbl_topic_play_detail.topic_status = 0
+          AND tbl_topic_play_detail.player_building_id = (
+            SELECT
+                tbl_topic_play_detail.player_building_id
+            FROM
+                poetry_game.tbl_topic_play_detail
+            WHERE
+                tbl_topic_play_detail.player_topic_id = #{playerTopicId}
+        )
+    </select>
+</mapper>

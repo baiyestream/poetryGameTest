@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.topicInformationMapper">
+
+    <!-- 第一次取:随机取出题目信息表里对应建筑容纳量的题目id -->
+    <select id="topicId"  resultType="Integer">
+        SELECT
+            poetry_game.tbl_topic_information.topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            tbl_topic_information.`status` = 2
+        ORDER BY
+            rand()
+        Limit #{topicLimit}
+    </select>
+
+    <select id="topicSum" resultType="Integer">
+        select count(*) from tbl_topic_information where `status` = 2
+    </select>
+
+    <!-- 根据玩家题目明细表的topic_id查出题目信息表的content -->
+    <select id="topicContent" resultType="String">
+        SELECT
+            tbl_topic_information.content
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            tbl_topic_information.topic_id = #{topicId}
+    </select>
+
+</mapper>

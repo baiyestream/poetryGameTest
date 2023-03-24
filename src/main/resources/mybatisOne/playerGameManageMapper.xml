@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.PlayerGameManageDao">
+<!-- 游戏题目管理接口 -->
+
+    <!--  1、自主选关请求国家地图  -->
+    <resultMap id="CountryMapNode" type="com.poetrygame.dto.cityDto.topicCountryMapNode">
+        <result property="countryID" column="country_id" jdbcType="VARCHAR"/>
+        <result property="pictureID" column="picture_id" jdbcType="VARCHAR"/>
+        <result property="countryName" column="country_name" jdbcType="VARCHAR"/>
+        <result property="gridStartX" column="grid_start_x" jdbcType="VARCHAR"/>
+        <result property="gridStartY" column="grid_start_y" jdbcType="VARCHAR"/>
+        <result property="gridWidth" column="grid_width" jdbcType="VARCHAR"/>
+        <result property="gridHeight" column="grid_height" jdbcType="VARCHAR"/>
+        <result property="gridRows" column="grid_rows" jdbcType="VARCHAR"/>
+        <result property="gridColumns" column="grid_columns" jdbcType="VARCHAR"/>
+        <result property="pictureWidth" column="picture_width" jdbcType="VARCHAR"/>
+        <result property="pictureHeight" column="picture_height" jdbcType="VARCHAR"/>
+        <result property="pictureSavedAddr" column="saved_addr" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="CityMapNode"  type="com.poetrygame.dto.cityDto.topicCityMapNode">
+<!--        <result property="countryAndCityID" column="country_city_id" jdbcType="VARCHAR"/>-->
+<!--        <result property="countryID" column="country_id" jdbcType="VARCHAR"/>-->
+        <result property="cityID" column="city_id" jdbcType="VARCHAR"/>
+        <result property="pictureID" column="picture_id" jdbcType="VARCHAR"/>
+        <result property="cityName" column="city_name" jdbcType="VARCHAR"/>
+        <result property="topicTypeName" column="topic_type_name" jdbcType="VARCHAR"/>
+        <result property="gridStartX" column="grid_start_x" jdbcType="VARCHAR"/>
+        <result property="gridStartY" column="grid_start_y" jdbcType="VARCHAR"/>
+        <result property="gridWidth" column="grid_width" jdbcType="VARCHAR"/>
+        <result property="gridHeight" column="grid_height" jdbcType="VARCHAR"/>
+        <result property="gridRows" column="grid_rows" jdbcType="VARCHAR"/>
+        <result property="gridColumns" column="grid_columns" jdbcType="VARCHAR"/>
+        <result property="pictureWidth" column="picture_width" jdbcType="VARCHAR"/>
+        <result property="pictureHeight" column="picture_height" jdbcType="VARCHAR"/>
+        <result property="positionX" column="position_x" jdbcType="VARCHAR"/>
+        <result property="positionY" column="position_y" jdbcType="VARCHAR"/>
+        <result property="pictureSavedAddr" column="saved_addr" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="BuildingNode" type="com.poetrygame.dto.cityDto.topicBuildingNode">
+        <result property="cityAndBuildingID" column="city_building_id" jdbcType="VARCHAR"/>
+<!--        <result property="countryAndCityID" column="country_city_id" jdbcType="VARCHAR"/>-->
+        <result property="buildingID" column="building_id" jdbcType="VARCHAR"/>
+        <result property="cityID" column="city_id" jdbcType="VARCHAR"/>
+        <result property="positionX" column="position_x" jdbcType="VARCHAR"/>
+        <result property="positionY" column="position_y" jdbcType="VARCHAR"/>
+        <result property="topicLimit" column="topic_limit" jdbcType="VARCHAR"/>
+        <result property="buildingName" column="building_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 1.1 获取国家地图列表   -->
+    <select id="getCountryMapList" resultMap="CountryMapNode">
+        SELECT
+            t_country.country_id,
+            t_country.country_name,
+            t_picture.width AS `picture_width`,
+            t_picture.height AS `picture_height`,
+            t_picture.saved_addr AS `saved_addr`
+        FROM
+            tbl_country_map AS t_country
+            LEFT JOIN tbl_picture_information AS t_picture ON t_country.picture_id = t_picture.picture_id
+        WHERE
+--               处于正常，且已经与城市建立关联关系的记录
+            t_country.status = 2 AND t_country.conn_city_status = 2
+        ORDER BY t_country.country_id
+    </select>
+
+    <!-- 1.2 以1.1中的国家ID为关键字，获取一条国家地图详情 -->
+    <select id="getOneCountryMapNode" parameterType="int" resultMap="CountryMapNode">
+        SELECT
+            t_country.country_id,
+            t_country.picture_id,
+            t_country.country_name,
+            t_country.grid_start_x,
+            t_country.grid_start_y,
+            t_country.grid_width,
+            t_country.grid_height,
+            t_country.grid_rows,
+            t_country.grid_columns,
+            t_picture.width AS `picture_width`,
+            t_picture.height AS `picture_height`,
+            t_picture.saved_addr AS `saved_addr`
+        FROM
+            tbl_country_map AS t_country
+            LEFT JOIN tbl_picture_information AS t_picture ON t_country.picture_id = t_picture.picture_id
+        WHERE
+            t_country.country_id = #{countryID}
+    </select>
+
+    <!--  1.3 以1.2的国家ID为关键字，获取该国家所属的城市列表  -->
+    <select id="getCityMapListBelongToCountry" parameterType="int" resultMap="CityMapNode">
+        SELECT
+--             t_country_city.country_city_id,
+            t_country_city.country_id,
+            t_city.city_id,
+            t_city.city_name,
+            t_type.topic_type_name,   -- 预留扩展用
+            t_country_city.position_x,
+            t_country_city.position_y
+        FROM
+            tbl_country_and_city AS t_country_city
+            LEFT JOIN tbl_city_map AS t_city on t_country_city.city_id = t_city.city_id
+            LEFT JOIN tbl_topic_type AS t_type ON t_city.topic_type_id = t_type.topic_type_id
+        WHERE
+            t_country_city.country_id = #{countryID}
+            AND t_city.conn_building_status = 2
+--         这里只需再加强城市与建筑关联状态检查即可，不必检查城市状态，城市状态在建立与国家关联时，会有限定，这里不再重复检查
+        ORDER BY t_city.city_id
+    </select>
+
+    <!--  1.4 以1.3中的城市ID为关键字，获取一条城市详情  -->
+    <select id="getOneCityMapInCountry" parameterType="int" resultMap="CityMapNode">
+        SELECT
+--             t_country_city.country_city_id,
+--             t_country_city.country_id,
+            t_city.city_id,
+            t_city.city_name,
+            t_city.picture_id,
+            t_type.topic_type_name,   -- 预留扩展用
+            t_city.grid_start_x,
+            t_city.grid_start_y,
+            t_city.grid_width,
+            t_city.grid_height,
+            t_city.grid_rows,
+            t_city.grid_columns,
+            t_picture.width AS `picture_width`,
+            t_picture.height AS `picture_height`,
+            t_picture.saved_addr AS `saved_addr`
+        FROM
+--             tbl_country_and_city AS t_country_city
+--             LEFT JOIN tbl_city_map AS t_city on t_country_city.city_id = t_city.city_id
+            tbl_city_map AS t_city
+            LEFT JOIN tbl_picture_information AS t_picture ON t_city.picture_id = t_picture.picture_id
+            LEFT JOIN tbl_topic_type AS t_type ON t_city.topic_type_id = t_type.topic_type_id
+        WHERE
+            t_city.city_id = #{cityID}
+    </select>
+
+    <!--  1.5 以1.4中的国家关联城市ID为关键字，获取该城市所属的建筑列表  -->
+    <select id="getBuildingListBelongToCity" parameterType="int" resultMap="BuildingNode">
+        SELECT
+            t_city_building.city_building_id,
+--             t_city_building.country_city_id,
+            t_city_building.building_id,
+            t_city_building.city_id,
+            t_city_building.position_x,
+            t_city_building.position_y,
+            t_building.topic_limit,
+            t_building.building_name
+        FROM
+            tbl_city_and_building AS t_city_building
+            LEFT JOIN tbl_building AS t_building on t_city_building.building_id = t_building.building_id
+        WHERE
+            t_city_building.city_id = #{cityID}
+        ORDER BY t_city_building.building_id
+    </select>
+
+    <!--  1.6 用1.5中的城市关联建筑ID、玩家ID，结合题目数量，在玩家游历建筑表中查找可用记录，进而就可以据此从题目表中获取相应的题目，发送给前端玩家  -->
+<!--    <select id="getOneTopicInBuilding" parameterType="int" resultMap="BuildingNode">-->
+<!--        SELECT-->
+<!--            t_city_building.city_building_id,-->
+<!--            t_city_building.country_city_id,-->
+<!--            t_city_building.building_id,-->
+<!--            t_city_building.city_id,-->
+<!--            t_city_building.position_x,-->
+<!--            t_city_building.position_y,-->
+<!--            t_building.topic_limit,-->
+<!--            t_building.building_name-->
+<!--        FROM-->
+<!--            tbl_city_and_building AS t_city_building-->
+<!--                LEFT JOIN tbl_building AS t_building on t_city_building.building_id = t_building.building_id-->
+<!--        WHERE-->
+<!--            t_city_building.country_city_id = #{countryCityID}-->
+<!--        ORDER BY t_city_building.building_id-->
+<!--    </select>-->
+
+
+<!--    /*==============================================================*/-->
+<!--    /* Table: tbl_country_and_city                                  */-->
+<!--    /*==============================================================*/-->
+<!--    create table tbl_country_and_city-->
+<!--    (-->
+<!--    country_city_id      int not null auto_increment,-->
+<!--    country_id           int,-->
+<!--    city_id              int,-->
+<!--    position_x           int,-->
+<!--    position_y           int,-->
+<!--    primary key (country_city_id)-->
+<!--    );-->
+
+<!--    /*==============================================================*/-->
+<!--    /* Table: tbl_city_and_building                                 */-->
+<!--    /*==============================================================*/-->
+<!--    create table tbl_city_and_building-->
+<!--    (-->
+<!--    city_building_id     int not null auto_increment,-->
+<!--    city_id              int,-->
+<!--    building_id          int,-->
+<!--    country_city_id      int,-->
+<!--    position_x           int,-->
+<!--    position_y           int,-->
+<!--    primary key (city_building_id)-->
+<!--    );-->
+
+<!--    /*==============================================================*/-->
+<!--    /* Table: tbl_player_building                                   */-->
+<!--    /*==============================================================*/-->
+<!--    create table tbl_player_building-->
+<!--    (-->
+<!--    player_building_id   bigint not null auto_increment,-->
+<!--    city_building_id     int,-->
+<!--    player_id            bigint,-->
+<!--    topic_count          int,-->
+<!--    done_topic           int,-->
+<!--    primary key (player_building_id)-->
+<!--    );-->
+
+<!--    /*==============================================================*/-->
+<!--    /* Table: tbl_topic_play_detail                                 */-->
+<!--    /*==============================================================*/-->
+<!--    create table tbl_topic_play_detail-->
+<!--    (-->
+<!--    player_topic_id      bigint not null auto_increment,-->
+<!--    player_building_id   bigint,-->
+<!--    topic_id             bigint,-->
+<!--    player_id            bigint,-->
+<!--    topic_status         int,-->
+<!--    start_time           datetime,-->
+<!--    used_time            int,-->
+<!--    primary key (player_topic_id)-->
+<!--    );-->
+
+
+</mapper>

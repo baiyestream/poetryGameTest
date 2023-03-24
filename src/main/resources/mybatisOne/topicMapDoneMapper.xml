@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.topicMapDoneMapper">
+
+    <resultMap id="topicMapDoneMapper" type="com.poetrygame.dto.topicMapDone">
+        <result property="doneTopic" column="done_topic"/>
+        <result property="topicCount" column="topic_count"/>
+        <result property="playerId" column="player_id"/>
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="buildingId" column="building_id"/>
+    </resultMap>
+
+    <select id="topicMapDone" resultMap="topicMapDoneMapper">
+        SELECT
+            tbl_player_building.player_building_id,
+            tbl_player_building.done_topic,
+            tbl_player_building.topic_count
+        FROM
+            poetry_game.tbl_player_building
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+          AND tbl_player_building.city_building_id = (
+            SELECT
+                tbl_city_and_building.city_building_id
+            FROM
+                poetry_game.tbl_city_and_building
+            WHERE
+                tbl_city_and_building.city_id = #{cityId}
+              AND tbl_city_and_building.building_id = #{buildingId}
+        )
+    </select>
+
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.playerGameAccountMapper">
+
+    <!-- 判断用户是否是第一次玩游戏,非空判断-->
+    <select id="isOnly" resultType="Integer">
+        SELECT
+            1
+        FROM
+            poetry_game.tbl_player_game_account
+        WHERE
+            player_id = #{playerId}
+        LIMIT 1
+    </select>
+
+</mapper>

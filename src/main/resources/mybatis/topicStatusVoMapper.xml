@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.topicStatusVoMapper">
+
+    <resultMap id="topicStatusVo" type="com.poetrygame.vo.topicStatusVo">
+        <result property="playerTopicId" column="player_topic_id"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="topicStatus" column="topic_status"/>
+        <result property="playerId" column="player_id"/>
+    </resultMap>
+
+<!--    <select id="topicStatus" resultMap="topicStatusVo">-->
+<!--        SELECT-->
+<!--            tbl_topic_play_detail.topic_id,-->
+<!--            tbl_topic_play_detail.topic_status,-->
+<!--            tbl_topic_play_detail.player_topic_id-->
+<!--        FROM-->
+<!--            poetry_game.tbl_topic_play_detail-->
+<!--        WHERE-->
+<!--                tbl_topic_play_detail.player_topic_id = (-->
+<!--                SELECT-->
+<!--                    tbl_player_information.player_topic_id-->
+<!--                FROM-->
+<!--                    poetry_game.tbl_player_information-->
+<!--                WHERE-->
+<!--                    tbl_player_information.player_id = #{playerId}-->
+<!--            )-->
+<!--    </select>-->
+
+</mapper>

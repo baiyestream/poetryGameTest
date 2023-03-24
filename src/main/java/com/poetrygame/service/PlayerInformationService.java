@@ -16,9 +16,11 @@ public interface PlayerInformationService extends IService<PlayerInformation> {
     // 测试:登录接口
     int loginTest(PlayerInformation playerInformation);
     // 测试：查询openId返回给前端
-    String getOpenId(String openId);
+    Long getOpenId(String openId);
     // 测试：获取玩家昵称，并将玩家昵称保存到数据库
-    int getSaveAliasName(String aliasName,Long playerId);
+    int getSaveAliasName(String aliasName,String weixinId);
+
+    PlayerInformation getLifeInformation(String weixinId);
 
 
 

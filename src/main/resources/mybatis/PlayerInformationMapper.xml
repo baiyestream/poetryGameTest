@@ -25,13 +25,6 @@
         <result property="activeValue" column="active_value"/>
     </resultMap>
 
-
-    <!-- 用户第一次登录，请求获得登录id-->
-    <insert id="insert" parameterType="com.poetrygame.pojo.PlayerInformation">
-        insert into  poetry_game.tbl_player_information(alias_name,weixin_id,registe_time,life_count,life_limit)
-        values (#{aliasName},#{weixinId},#{registeTime},#{lifeCount},#{lifeLimit});
-    </insert>
-
     <!-- 测试:登录接口 -->
     <insert id="insertTest" parameterType="com.poetrygame.pojo.PlayerInformation">
         insert into poetry_game.tbl_player_information(weixin_id,registe_time,life_count,life_limit)
@@ -39,22 +32,30 @@
     </insert>
 
     <!-- 测试：查询openId返回给前端 -->
-    <select id="openId" parameterType="com.poetrygame.pojo.PlayerInformation" resultType="string">
-        select weixin_id from poetry_game.tbl_player_information where weixin_id = #{weixinId}
+    <select id="openId" parameterType="com.poetrygame.pojo.PlayerInformation" resultType="Integer">
+        select player_id from poetry_game.tbl_player_information where weixin_id = #{weixinId}
     </select>
-    
-    <!-- 测试：获取玩家昵称，并将玩家昵称保存到数据库 -->
-<!--    <insert id="saveAliasName" parameterType="com.poetrygame.pojo.PlayerInformation">-->
-<!--        insert into poetry_game.tbl_player_information(alias_name)-->
-<!--        values (#{aliasName})-->
-<!--        where `weixin_id` = #{weixinId}-->
-<!--    </insert>-->
 
     <update id="saveAliasName" parameterType="com.poetrygame.pojo.PlayerInformation">
         update poetry_game.tbl_player_information
         set alias_name = #{aliasName}
-        where player_id = #{playerId}
+        where weixin_id= #{weixinId}
     </update>
+    
+    <select id="lifeInformation" resultMap="PlayInformationMapper">
+        select
+            tbl_player_information.weixin_id,
+            tbl_player_information.life_count,
+            tbl_player_information.life_limit
+        from
+            poetry_game.tbl_player_information
+        where
+            tbl_player_information.weixin_id = #{weixinId}
+    </select>
+
+
+
+
 
 
 </mapper>

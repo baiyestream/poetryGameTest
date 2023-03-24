@@ -48,10 +48,17 @@ public class R<T> {
     }
 
 
-
     public static <T> R<T> error(String message) {
         R r = new R();
         r.message = message;
+        r.code = 0;
+        return r;
+    }
+
+    public static <T> R<T> error(T object,String message) {
+        R<T> r = new R<T>();
+        r.message = message;
+        r.data = object;
         r.code = 0;
         return r;
     }

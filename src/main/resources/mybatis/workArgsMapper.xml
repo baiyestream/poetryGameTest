@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.WorkArgsMapper">
+
+    <select id="lifeLimit" resultType="Integer">
+        SELECT
+            tbl_work_args.arg_value
+        FROM
+            poetry_game.tbl_work_args
+        WHERE
+            tbl_work_args.arg_name = 'life_limit'
+    </select>
+    
+    <select id="lifeResumeOnline" resultType="Integer">
+        SELECT
+            tbl_work_args.arg_value
+        FROM
+            poetry_game.tbl_work_args
+        WHERE
+            tbl_work_args.arg_name = 'life_resume_online'
+    </select>
+
+    <select id="lifeResumeOffline" resultType="Integer">
+        SELECT
+            tbl_work_args.arg_value
+        FROM
+            poetry_game.tbl_work_args
+        WHERE
+            tbl_work_args.arg_name = 'life_resume_offline'
+    </select>
+
+
+
+</mapper>

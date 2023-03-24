@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.topicDoneMapper">
+    
+    <resultMap id="topicDoneMapper" type="com.poetrygame.dto.topicDone">
+        <result property="doneTopic" column="done_topic"/>
+        <result property="playerBuildingId" column="player_building_id"/>
+        <result property="playerTopicId" column="player_topic_id"/>
+    </resultMap>
+    
+    <update id="topicDone" >
+        UPDATE tbl_player_building
+        SET tbl_player_building.done_topic = #{doneTopic}
+        WHERE
+                tbl_player_building.player_building_id = (
+                SELECT
+                    tbl_topic_play_detail.player_building_id
+                FROM
+                    poetry_game.tbl_topic_play_detail
+                WHERE
+                    tbl_topic_play_detail.player_topic_id = #{playerTopicId}
+            )
+    </update>
+
+</mapper>

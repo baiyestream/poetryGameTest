@@ -21,9 +21,11 @@ public interface PlayInformationMapper extends BaseMapper<PlayerInformation> {
     // 测试：登录接口
     int insertTest(PlayerInformation playerInformation);
     // 测试：查询openId返回给前端
-    String openId(String openId);
+    Long openId(String openId);
     // 测试：获取玩家昵称，并将玩家昵称保存到数据库
-    int saveAliasName(String aliasName,Long playerId);
+    int saveAliasName(String aliasName,String weixinId);
+
+    PlayerInformation lifeInformation(String weixinId);
 
 
 }

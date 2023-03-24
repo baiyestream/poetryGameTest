@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.cityAndBuildingMapper">
+
+    <!-- 在城市建筑关联表中取出城市建筑ID，建筑ID-->
+    <resultMap id="map"  type="com.poetrygame.pojo.cityAndBuilding">
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="buildingId" column="building_id"/>
+    </resultMap>
+
+    <!-- 根据城市ID和建筑ID查出城市建筑ID -->
+    <resultMap id="map1" type="com.poetrygame.pojo.cityAndBuilding">
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="buildingId" column="building_id"/>
+    </resultMap>
+
+    <!-- 用户第一次玩游戏,直接开始游戏,在城市建筑关联表中取出city_building_id,building_id,条件为city_building_id为1. -->
+    <select id="cityAndBuilding" resultMap="map" >
+        SELECT
+            poetry_game.tbl_city_and_building.city_building_id,
+            poetry_game.tbl_city_and_building.building_id,
+            poetry_game.tbl_city_and_building.city_id
+        FROM
+            poetry_game.tbl_city_and_building
+        WHERE
+            tbl_city_and_building.city_building_id = 1
+    </select>
+
+    <!-- 用户第一次玩游戏,从地图进入,根据城市ID和建筑ID查出城市建筑ID-->
+    <select id="cityBuildingId" parameterType="com.poetrygame.pojo.cityAndBuilding" resultType="Integer">
+        SELECT
+            poetry_game.tbl_city_and_building.city_building_id
+        FROM
+            poetry_game.tbl_city_and_building
+        WHERE
+            tbl_city_and_building.city_id = #{cityId}
+          AND tbl_city_and_building.building_id = #{buildingId}
+    </select>
+
+    <!-- 根据city_building_id去城市建筑关联表里找到city_id-->
+    <select id="cityId" parameterType="com.poetrygame.pojo.cityAndBuilding" resultType="Integer">
+        SELECT
+            tbl_city_and_building.city_id
+        FROM
+            poetry_game.tbl_city_and_building
+        WHERE
+            tbl_city_and_building.city_building_id = #{cityBuildingId}
+    </select>
+
+</mapper>

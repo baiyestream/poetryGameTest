@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.cityBuildingIDMapper">
+
+    <resultMap id="cityBuildingIDMapper" type="com.poetrygame.vo.cityBuildingID">
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="cityId" column="city_id"/>
+    </resultMap>
+
+    <select id="cityBuildingID" resultType="Integer">
+        SELECT
+            tbl_city_and_building.city_building_id
+        FROM
+            poetry_game.tbl_city_and_building
+        WHERE
+            tbl_city_and_building.city_id = #{cityId}
+          AND
+                tbl_city_and_building.city_building_id NOT IN (
+                SELECT
+                    tbl_player_building.city_building_id
+                FROM
+                    poetry_game.tbl_player_building
+            )
+    </select>
+
+</mapper>

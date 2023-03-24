@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.CityMapMapper">
+
+    <!-- 根据城市ID查出城市名称-->
+    <select id="cityName" parameterType="Integer" resultType="String">
+        SELECT
+            tbl_city_map.city_name
+        FROM
+            poetry_game.tbl_city_map
+        WHERE
+            tbl_city_map.city_id = #{cityId}
+    </select>
+</mapper>

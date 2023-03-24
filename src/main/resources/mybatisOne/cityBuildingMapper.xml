@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.cityBuildingMapper">
+
+    <resultMap id="cityBuildingMapper" type="com.poetrygame.dto.cityBuilding">
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="topicLimit" column="topic_limit"/>
+    </resultMap>
+
+
+    <!-- 将城市建筑关联表的city_building_id和建筑表的topic_limit插入到玩家游历建筑表 -->
+    <select id="cityBuildingTest" resultMap="cityBuildingMapper">
+        select
+            tbl_city_and_building.city_building_id,
+            tbl_building.topic_limit
+        from
+            poetry_game.tbl_city_and_building
+                left join poetry_game.tbl_building on tbl_city_and_building.building_id = tbl_building.building_id
+    </select>
+</mapper>
