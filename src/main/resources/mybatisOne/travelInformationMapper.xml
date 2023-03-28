@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.travelInformationMapper">
+
+    <resultMap id="travelInformationMapper" type="com.poetrygame.dto.travelInformation">
+        <result property="buildingId" column="building_id"/>
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="playerId" column="player_id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="countryId" column="country_id"/>
+        <result property="countryCityId" column="country_city_id"/>
+        <result property="topicCount" column="topic_count"/>
+        <result property="doneTopic" column="done_topic"/>
+    </resultMap>
+
+    <!-- 该玩家应该玩的总建筑数-->
+    <select id="travelInformationOne" resultType="Integer">
+        SELECT
+            count( DISTINCT tbl_city_and_building.building_id ) AS buildingTotal
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+    <!-- 该玩家应该玩的总城市数-->
+    <select id="travelInformationTwo" resultType="Integer">
+        SELECT
+            count( DISTINCT tbl_city_and_building.city_id ) AS cityTotal
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+    <!-- 该玩家应该玩的总国家数-->
+    <select id="travelInformationThree" resultType="Integer">
+        SELECT
+            count( DISTINCT tbl_country_and_city.country_id ) AS countryTotal
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <!-- 该玩家没有玩过的国家id,返回数组形式 -->
+    <!-- 用该数组filter应该玩的总城市数组,获得已经玩过的国家数 -->
+    <select id="travelInformationFour" resultType="list">
+        SELECT DISTINCT
+            tbl_country_and_city.country_id
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+        WHERE
+            topic_count != done_topic
+          AND tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <!-- 该玩家应该玩的总国家数组 -->
+    <select id="travelInformationFive" resultType="list">
+        SELECT DISTINCT
+            tbl_country_and_city.country_id
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <!-- 该玩家没有玩过的城市id,返回数组形式 -->
+    <!-- 用该数组filter应该玩的总城市数组,获得已经玩过的城市数 -->
+    <select id="travelInformationSix" resultType="list">
+        SELECT DISTINCT
+            tbl_city_and_building.city_id
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+        WHERE
+            topic_count != done_topic
+          AND tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <!-- 该玩家应该玩的总城市数组-->
+    <select id="travelInformationSeven" resultType="list">
+        SELECT DISTINCT
+            tbl_city_and_building.city_id
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+        WHERE
+            tbl_player_building.player_id = #{playerId}
+    </select>
+
+    <!-- 该玩家已经玩完的建筑 -->
+    <select id="travelInformationEight" resultType="Integer">
+        SELECT
+            count( tbl_city_and_building.building_id ) AS doneBuildingCount
+        FROM
+            tbl_player_building
+                LEFT JOIN tbl_city_and_building ON tbl_city_and_building.city_building_id = tbl_player_building.city_building_id
+                LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_city_id = tbl_city_and_building.country_city_id
+        WHERE
+            topic_count = done_topic
+          AND tbl_player_building.player_id = #{playerId}
+    </select>
+</mapper>

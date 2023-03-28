@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.poetrygame.common.R;
 import com.poetrygame.dto.*;
+import com.poetrygame.dto.getTopic.buildingLimit;
 import com.poetrygame.pojo.PlayerInformation;
 import com.poetrygame.pojo.playerBuilding;
 import com.poetrygame.pojo.topicPlayDetail;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author: zzw
@@ -73,6 +75,11 @@ public class TopicControllerTrial {
 
     @Resource
     private buildingTopicService buildingTopicService;
+
+    @Resource
+    private buildingLimitService buildingLimitService;
+
+
     @ApiImplicitParams({
             //参数效验
             @ApiImplicitParam(name ="openId",value="openId",required=true),
@@ -101,62 +108,227 @@ public class TopicControllerTrial {
                 // 可用题目总数
                 Integer topicSum = topicInformationService.getTopicSum();
                 // 将城市建筑关联表的city_building_id和建筑表的topic_limit插入到玩家游历建筑表
-                List<cityBuilding> cityBuilding = cityBuildingService.getCityBuilding();
-//                int size = cityBuilding.size();
                 int remainTopic = topicSum;
+                List<buildingLimit> buildingLimits = buildingLimitService.getBuildingLimitOne();
                 List<playerBuilding> playerBuildings = new LinkedList<>();
-                for(com.poetrygame.dto.cityBuilding building : cityBuilding){
+                for(com.poetrygame.dto.getTopic.buildingLimit buildingLimit : buildingLimits ){
                     playerBuilding playerBuilding = new playerBuilding();
-                    playerBuilding.setCityBuildingId(building.getCityBuildingId());
+                    playerBuilding.setCityBuildingId(buildingLimit.getCityBuildingId());
                     playerBuilding.setPlayerId(playerId);
-                    int insertSum = (remainTopic>building.getTopicLimit())?
-                            building.getTopicLimit():remainTopic;
+                    int insertSum = (remainTopic>buildingLimit.getTopicLimit())?
+                            buildingLimit.getTopicLimit():remainTopic;
                     playerBuilding.setTopicCount(insertSum);
                     playerBuilding.setDoneTopic(0);
                     playerBuildings.add(playerBuilding);
-                    remainTopic = remainTopic - insertSum;
+                    remainTopic = remainTopic-insertSum;
                     if(remainTopic <= 0){
                         break;
                     }
                 }
-                /**
-                 * 1.计算出每个hard_level需要多少题,在题库中取出对应hard_level的数量,
-                 *   如果1不够则在2里取出缺少的数量,如果2不够则在3里取出缺少的数量,如果3则拉倒、
-                 */
                 Integer insertBatch = playerBuildingService.getInsertBatch(playerBuildings);
                 if(insertBatch > 0){
                     log.info("插入成功");
                 }else{
                     log.info("插入失败");
                 }
-                // 基于玩家ID,取出对应玩家的总容纳题目数
-                Integer topicLimit = playerBuildingService.getTopicCount(playerId);
-                // 根据题目数在题目信息表取出对应的List<topic_id>
-                List<Integer> topicId = topicInformationService.getTopicId(topicLimit);
-                // 随机取题
-                // 在玩家游历建筑表取出player_building_id,topic_count
-                List<playerBuilding> playerBuildingTest = playerBuildingService.getPlayerBuildingTest(playerId);
-                // 取出对应玩家id在玩家游历建筑表的对应条数
-                Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
-
-                List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
-                int m = 0;
-                for(int i = 0;i<topicNumber;i++){
-                    for(int j = 0;j<playerBuildingTest.get(i).getTopicCount();j++){
-                        topicPlayDetail topicPlayDetail = new topicPlayDetail();
-                        topicPlayDetail.setPlayerBuildingId(playerBuildingTest.get(i).getPlayerBuildingId());
-                        topicPlayDetail.setTopicId(Long.valueOf(topicId.get(m)));
-                        m++;
-                        topicPlayDetail.setPlayerId(playerId);
-                        topicPlayDetail.setTopicStatus(0);
-                        topicPlayDetails.add(topicPlayDetail);
+                //地图难度级别1需要多少题
+                Integer levelOneTopicNeed = buildingLimitService.getBuildingLimitTwo();
+                Integer levelOneTopic = topicInformationService.topicLevelOne();
+                if(levelOneTopic >= levelOneTopicNeed){
+                    List<Integer> levelOneTopics =
+                            topicInformationService.getTopicLevelOneSelect(levelOneTopicNeed);
+                    Integer levelTwoTopicNeed = buildingLimitService.getBuildingLimitThree();
+                    Integer levelTwoTopic = topicInformationService.topicLevelTwo();
+                    // 地图难度级别2需要多少题,2级别难度的题是不够的,需要从3里拿
+                    if(levelTwoTopic < levelTwoTopicNeed){
+                        List<Integer> levelTwoTopics =
+                                topicInformationService.getTopicLevelTwoSelect(levelTwoTopicNeed);
+                        int differTopics = levelTwoTopicNeed - levelTwoTopic;
+                        List<Integer> topicLevelThreePart =
+                                topicInformationService.getTopicLevelThreeSelect(differTopics);
+                        // 在难度为3的题目中去除topicLevelThreePart
+                        List<Integer> levelThreeTopic =
+                                topicInformationService.getTopicLevelThreeCount();
+                        List<Integer> levelThreeTopicRest =
+                                levelThreeTopic.stream().filter(item -> !topicLevelThreePart.contains(item)).collect(Collectors.toList());
+                        // 如果3级别剩下的题目足够多,取出指定数量插入
+                        Integer levelThreeTopicNeed = buildingLimitService.getBuildingLimitFour();
+                        if(levelThreeTopicNeed >= levelThreeTopicRest.size()){
+                            List<Integer> levelThreeTopics = topicInformationService.getTopicLevelThreeSelect(levelThreeTopicRest.size());
+                            List<Integer> topicNeedList = new LinkedList<>();
+                            topicNeedList.addAll(levelOneTopics);
+                            topicNeedList.addAll(levelTwoTopics);
+                            topicNeedList.addAll(topicLevelThreePart);
+                            topicNeedList.addAll(levelThreeTopics);
+                            List<playerBuilding> playerBuildingId =
+                                    playerBuildingService.getPlayerBuildingTest(playerId);
+                            Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
+                            List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                            int m = 0;
+                            for(int i =0;i<topicNumber;i++){
+                                for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                    topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                    topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                    topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                    m++;
+                                    topicPlayDetail.setPlayerId(playerId);
+                                    topicPlayDetail.setTopicStatus(0);
+                                    topicPlayDetails.add(topicPlayDetail);
+                                }
+                            }
+                            Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                            if (insertBatch1>0){
+                                log.info("玩家题目明细表插入成功");
+                            }else{
+                                log.info("玩家题目明细表插入失败");
+                            }
+                        }
+                        // 如果3级别剩下的数目不够多,取出全部插入
+                        if(levelThreeTopicNeed < levelThreeTopicRest.size()){
+                            List<Integer> topicNeedList = new LinkedList<>();
+                            List<Integer> levelThreeTopics = topicInformationService.getTopicLevelThreeCount();
+                            topicNeedList.addAll(levelOneTopics);
+                            topicNeedList.addAll(levelTwoTopics);
+                            topicNeedList.addAll(topicLevelThreePart);
+                            topicNeedList.addAll(levelThreeTopics);
+                            List<playerBuilding> playerBuildingId =
+                                    playerBuildingService.getPlayerBuildingTest(playerId);
+                            Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
+                            List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                            int m = 0;
+                            for(int i =0;i<topicNumber;i++){
+                                for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                    topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                    topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                    topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                    m++;
+                                    topicPlayDetail.setPlayerId(playerId);
+                                    topicPlayDetail.setTopicStatus(0);
+                                    topicPlayDetails.add(topicPlayDetail);
+                                }
+                            }
+                            Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                            if (insertBatch1>0){
+                                log.info("玩家题目明细表插入成功");
+                            }else{
+                                log.info("玩家题目明细表插入失败");
+                            }
+                        }
+                    }
+                    // 地图难度级别2需要多少题,2级别难度的题是够的
+                    if(levelTwoTopic >= levelTwoTopicNeed){
+                        List<Integer> levelTwoTopics =
+                                topicInformationService.getTopicLevelTwoSelect(levelTwoTopicNeed);
+                        Integer levelThreeTopicNeed = buildingLimitService.getBuildingLimitFour();
+                        Integer levelThreeTopic = topicInformationService.topicLevelThree();
+                        // 地图难度级别3需要多少题,3级别难度的题是不够的
+                        if(levelThreeTopic < levelThreeTopicNeed){
+                            List<Integer> levelThreeTopics = topicInformationService.getTopicLevelThreeCount();
+                            List<Integer> topicNeedList = new LinkedList<>();
+                            topicNeedList.addAll(levelOneTopics);
+                            topicNeedList.addAll(levelTwoTopics);
+                            topicNeedList.addAll(levelThreeTopics);
+                            List<playerBuilding> playerBuildingId =
+                                    playerBuildingService.getPlayerBuildingTest(playerId);
+                            Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
+                            List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                            int restTopic = topicNeedList.size();
+                            int m = 0;
+                            for(int i =0;i<topicNumber;i++){
+                                for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                    restTopic--;
+                                    if(restTopic <0 ){
+                                        break;
+                                    }
+                                    topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                    topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                    topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                    m++;
+                                    topicPlayDetail.setPlayerId(playerId);
+                                    topicPlayDetail.setTopicStatus(0);
+                                    topicPlayDetails.add(topicPlayDetail);
+                                }
+                            }
+                            Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                            if (insertBatch1>0){
+                                log.info("玩家题目明细表插入成功");
+                            }else{
+                                log.info("玩家题目明细表插入失败");
+                            }
+                        }
+                        // 地图难度级别3需要多少题,3级别难度的题是够的
+                        if(levelThreeTopic >= levelThreeTopicNeed){
+                            List<Integer> levelThreeTopics =
+                                    topicInformationService.getTopicLevelThreeSelect(levelThreeTopicNeed);
+                            List<Integer> topicNeedList = new LinkedList<>();
+                            topicNeedList.addAll(levelOneTopics);
+                            topicNeedList.addAll(levelTwoTopics);
+                            topicNeedList.addAll(levelThreeTopics);
+                            List<playerBuilding> playerBuildingId =
+                                    playerBuildingService.getPlayerBuildingTest(playerId);
+                            Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
+                            List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                            int m = 0;
+                            for(int i =0;i<topicNumber;i++){
+                                for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                    topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                    topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                    topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                    m++;
+                                    topicPlayDetail.setPlayerId(playerId);
+                                    topicPlayDetail.setTopicStatus(0);
+                                    topicPlayDetails.add(topicPlayDetail);
+                                }
+                            }
+                            Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                            if (insertBatch1>0){
+                                log.info("玩家题目明细表插入成功");
+                            }else{
+                                log.info("玩家题目明细表插入失败");
+                            }
+                        }
                     }
                 }
-                Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
-                if(insertBatch1 > 0){
-                    log.info("玩家题目明细表插入成功");
-                }else{
-                    log.info("玩家题目明细表插入失败");
+                // 1级别的题不够,2级别的题不够，3级别的题不够
+                if(levelOneTopic < levelOneTopicNeed){
+                    int differTopicOneTwo = levelOneTopicNeed - levelOneTopic;
+                    Integer levelTwoTopic = topicInformationService.topicLevelTwo();
+                    if(differTopicOneTwo > levelTwoTopic){
+                        // 取出全部hard_level为1+hard_level为2+部分hard_level为3的differTopic的题目
+                        int differTopicTwoThree = differTopicOneTwo - levelTwoTopic;
+                        List<Integer> topicLevelOneCount =
+                                topicInformationService.getTopicLevelOneCount();
+                        List<Integer> topicLevelTwoCount =
+                                topicInformationService.getTopicLevelTwoCount();
+                        List<Integer> topicLevelThreeSelect =
+                                topicInformationService.getTopicLevelThreeSelect(differTopicTwoThree);
+                        List<Integer> topicOneList = new LinkedList<>();
+                        topicOneList.addAll(topicLevelOneCount);
+                        topicOneList.addAll(topicLevelTwoCount);
+                        topicOneList.addAll(topicLevelThreeSelect);
+                        List<playerBuilding> playerBuildingId =
+                                playerBuildingService.getPlayerBuildingTest(playerId);
+                        Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
+                        List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                        int m = 0;
+                        for(int i =0;i<topicNumber;i++){
+                            for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                topicPlayDetail.setTopicId(Long.valueOf(topicOneList.get(m)));
+                                m++;
+                                topicPlayDetail.setPlayerId(playerId);
+                                topicPlayDetail.setTopicStatus(0);
+                                topicPlayDetails.add(topicPlayDetail);
+                            }
+                        }
+                        Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                        if (insertBatch1>0){
+                            log.info("玩家题目明细表插入成功");
+                        }else{
+                            log.info("玩家题目明细表插入失败");
+                        }
+                    }
                 }
                 // 根据玩家的Id,所有的题目都插入到了玩家题目明细表,取出玩家游历建筑表的playerBuildingId1
                 playerBuildingId playerBuildingId = playerBuildingIdService.getPlayerBuildingId(playerId);
@@ -189,7 +361,6 @@ public class TopicControllerTrial {
              */
             // 将城市建筑关联表的city_building_id和建筑表的topic_limit插入到玩家游历建筑表
             List<cityBuilding> cityBuilding = cityBuildingService.getCityBuilding();
-//            int size = cityBuilding.size();
             Integer topicSum = topicInformationService.getTopicSum();
             int remainTopic = topicSum;
             List<playerBuilding> playerBuildings = new LinkedList<>();
@@ -213,33 +384,204 @@ public class TopicControllerTrial {
             }else{
                 log.info("插入失败");
             }
-            // 基于玩家ID,取出对应玩家的总容纳题目数
-            Integer topicLimit = playerBuildingService.getTopicCount(playerId);
-            // 根据题目数在题目信息表取出对应的List<topic_id>
-            List<Integer> topicId = topicInformationService.getTopicId(topicLimit);
-            // 在玩家游历建筑表取出player_building_id,topic_count
-            List<playerBuilding> playerBuildingTest = playerBuildingService.getPlayerBuildingTest(playerId);
-            // 取出对应玩家id在玩家游历建筑表的对应条数
-            Integer topicNumber = playerBuildingService.getTopicNumber(playerId);
-
-            List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
-            int m = 0;
-            for(int i = 0;i<topicNumber;i++){
-                for(int j = 0;j<playerBuildingTest.get(i).getTopicCount();j++){
-                    topicPlayDetail topicPlayDetail = new topicPlayDetail();
-                    topicPlayDetail.setPlayerBuildingId(playerBuildingTest.get(i).getPlayerBuildingId());
-                    topicPlayDetail.setTopicId(Long.valueOf(topicId.get(m)));
-                    m++;
-                    topicPlayDetail.setPlayerId(playerId);
-                    topicPlayDetail.setTopicStatus(0);
-                    topicPlayDetails.add(topicPlayDetail);
+            //地图难度级别1需要多少题
+            Integer levelOneTopicNeed = buildingLimitService.getBuildingLimitTwo();
+            Integer levelOneTopic = topicInformationService.topicLevelOne();
+            if(levelOneTopic >= levelOneTopicNeed){
+                List<Integer> levelOneTopics =
+                        topicInformationService.getTopicLevelOneSelect(levelOneTopicNeed);
+                Integer levelTwoTopicNeed = buildingLimitService.getBuildingLimitThree();
+                Integer levelTwoTopic = topicInformationService.topicLevelTwo();
+                // 地图难度级别2需要多少题,2级别难度的题是不够的,需要从3里拿
+                if(levelTwoTopic < levelTwoTopicNeed){
+                    List<Integer> levelTwoTopics =
+                            topicInformationService.getTopicLevelTwoSelect(levelTwoTopicNeed);
+                    int differTopics = levelTwoTopicNeed - levelTwoTopic;
+                    List<Integer> topicLevelThreePart =
+                            topicInformationService.getTopicLevelThreeSelect(differTopics);
+                    // 在难度为3的题目中去除topicLevelThreePart
+                    List<Integer> levelThreeTopic =
+                            topicInformationService.getTopicLevelThreeCount();
+                    List<Integer> levelThreeTopicRest =
+                            levelThreeTopic.stream().filter(item -> !topicLevelThreePart.contains(item)).collect(Collectors.toList());
+                    // 如果3级别剩下的题目足够多,取出指定数量插入
+                    Integer levelThreeTopicNeed = buildingLimitService.getBuildingLimitFour();
+                    if(levelThreeTopicNeed >= levelThreeTopicRest.size()){
+                        List<Integer> levelThreeTopics = topicInformationService.getTopicLevelThreeSelect(levelThreeTopicRest.size());
+                        List<Integer> topicNeedList = new LinkedList<>();
+                        topicNeedList.addAll(levelOneTopics);
+                        topicNeedList.addAll(levelTwoTopics);
+                        topicNeedList.addAll(topicLevelThreePart);
+                        topicNeedList.addAll(levelThreeTopics);
+                        List<playerBuilding> playerBuildingId =
+                                playerBuildingService.getPlayerBuildingTest(playerId);
+                        Integer topicNumberMap = playerBuildingService.getTopicNumber(playerId);
+                        List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                        int m = 0;
+                        for(int i =0;i<topicNumberMap;i++){
+                            for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                m++;
+                                topicPlayDetail.setPlayerId(playerId);
+                                topicPlayDetail.setTopicStatus(0);
+                                topicPlayDetails.add(topicPlayDetail);
+                            }
+                        }
+                        Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                        if (insertBatch1>0){
+                            log.info("玩家题目明细表插入成功");
+                        }else{
+                            log.info("玩家题目明细表插入失败");
+                        }
+                    }
+                    // 如果3级别剩下的数目不够多,取出全部插入
+                    if(levelThreeTopicNeed < levelThreeTopicRest.size()){
+                        List<Integer> topicNeedList = new LinkedList<>();
+                        List<Integer> levelThreeTopics = topicInformationService.getTopicLevelThreeCount();
+                        topicNeedList.addAll(levelOneTopics);
+                        topicNeedList.addAll(levelTwoTopics);
+                        topicNeedList.addAll(topicLevelThreePart);
+                        topicNeedList.addAll(levelThreeTopics);
+                        List<playerBuilding> playerBuildingId =
+                                playerBuildingService.getPlayerBuildingTest(playerId);
+                        Integer topicNumberMap = playerBuildingService.getTopicNumber(playerId);
+                        List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                        int m = 0;
+                        for(int i =0;i<topicNumberMap;i++){
+                            for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                m++;
+                                topicPlayDetail.setPlayerId(playerId);
+                                topicPlayDetail.setTopicStatus(0);
+                                topicPlayDetails.add(topicPlayDetail);
+                            }
+                        }
+                        Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                        if (insertBatch1>0){
+                            log.info("玩家题目明细表插入成功");
+                        }else{
+                            log.info("玩家题目明细表插入失败");
+                        }
+                    }
+                }
+                // 地图难度级别2需要多少题,2级别难度的题是够的
+                if(levelTwoTopic >= levelTwoTopicNeed){
+                    List<Integer> levelTwoTopics =
+                            topicInformationService.getTopicLevelTwoSelect(levelTwoTopicNeed);
+                    Integer levelThreeTopicNeed = buildingLimitService.getBuildingLimitFour();
+                    Integer levelThreeTopic = topicInformationService.topicLevelThree();
+                    // 地图难度级别3需要多少题,3级别难度的题是不够的
+                    if(levelThreeTopic < levelThreeTopicNeed){
+                        List<Integer> levelThreeTopics = topicInformationService.getTopicLevelThreeCount();
+                        List<Integer> topicNeedList = new LinkedList<>();
+                        topicNeedList.addAll(levelOneTopics);
+                        topicNeedList.addAll(levelTwoTopics);
+                        topicNeedList.addAll(levelThreeTopics);
+                        List<playerBuilding> playerBuildingId =
+                                playerBuildingService.getPlayerBuildingTest(playerId);
+                        Integer topicNumberMap = playerBuildingService.getTopicNumber(playerId);
+                        List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                        int restTopic = topicNeedList.size();
+                        int m = 0;
+                        for(int i =0;i<topicNumberMap;i++){
+                            for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                restTopic--;
+                                if(restTopic <0 ){
+                                    break;
+                                }
+                                topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                m++;
+                                topicPlayDetail.setPlayerId(playerId);
+                                topicPlayDetail.setTopicStatus(0);
+                                topicPlayDetails.add(topicPlayDetail);
+                            }
+                        }
+                        Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                        if (insertBatch1>0){
+                            log.info("玩家题目明细表插入成功");
+                        }else{
+                            log.info("玩家题目明细表插入失败");
+                        }
+                    }
+                    // 地图难度级别3需要多少题,3级别难度的题是够的
+                    if(levelThreeTopic >= levelThreeTopicNeed){
+                        List<Integer> levelThreeTopics =
+                                topicInformationService.getTopicLevelThreeSelect(levelThreeTopicNeed);
+                        List<Integer> topicNeedList = new LinkedList<>();
+                        topicNeedList.addAll(levelOneTopics);
+                        topicNeedList.addAll(levelTwoTopics);
+                        topicNeedList.addAll(levelThreeTopics);
+                        List<playerBuilding> playerBuildingId =
+                                playerBuildingService.getPlayerBuildingTest(playerId);
+                        Integer topicNumberMap = playerBuildingService.getTopicNumber(playerId);
+                        List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                        int m = 0;
+                        for(int i =0;i<topicNumberMap;i++){
+                            for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                                topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                                topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                                topicPlayDetail.setTopicId(Long.valueOf(topicNeedList.get(m)));
+                                m++;
+                                topicPlayDetail.setPlayerId(playerId);
+                                topicPlayDetail.setTopicStatus(0);
+                                topicPlayDetails.add(topicPlayDetail);
+                            }
+                        }
+                        Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                        if (insertBatch1>0){
+                            log.info("玩家题目明细表插入成功");
+                        }else{
+                            log.info("玩家题目明细表插入失败");
+                        }
+                    }
                 }
             }
-            Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
-            if(insertBatch1 > 0){
-                log.info("玩家题目明细表插入成功");
-            }else{
-                log.info("玩家题目明细表插入失败");
+            // 1级别的题不够,2级别的题不够，3级别的题不够
+            if(levelOneTopic < levelOneTopicNeed){
+                int differTopicOneTwo = levelOneTopicNeed - levelOneTopic;
+                Integer levelTwoTopic = topicInformationService.topicLevelTwo();
+                if(differTopicOneTwo > levelTwoTopic){
+                    // 取出全部hard_level为1+hard_level为2+部分hard_level为3的differTopic的题目
+                    int differTopicTwoThree = differTopicOneTwo - levelTwoTopic;
+                    List<Integer> topicLevelOneCount =
+                            topicInformationService.getTopicLevelOneCount();
+                    List<Integer> topicLevelTwoCount =
+                            topicInformationService.getTopicLevelTwoCount();
+                    List<Integer> topicLevelThreeSelect =
+                            topicInformationService.getTopicLevelThreeSelect(differTopicTwoThree);
+                    List<Integer> topicOneList = new LinkedList<>();
+                    topicOneList.addAll(topicLevelOneCount);
+                    topicOneList.addAll(topicLevelTwoCount);
+                    topicOneList.addAll(topicLevelThreeSelect);
+                    List<playerBuilding> playerBuildingId =
+                            playerBuildingService.getPlayerBuildingTest(playerId);
+                    Integer topicNumberMap = playerBuildingService.getTopicNumber(playerId);
+                    List<topicPlayDetail> topicPlayDetails = new LinkedList<>();
+                    int m = 0;
+                    for(int i =0;i<topicNumberMap;i++){
+                        for(int j =0;j<playerBuildingId.get(i).getTopicCount();j++){
+                            topicPlayDetail topicPlayDetail = new topicPlayDetail();
+                            topicPlayDetail.setPlayerBuildingId(playerBuildingId.get(i).getPlayerBuildingId());
+                            topicPlayDetail.setTopicId(Long.valueOf(topicOneList.get(m)));
+                            m++;
+                            topicPlayDetail.setPlayerId(playerId);
+                            topicPlayDetail.setTopicStatus(0);
+                            topicPlayDetails.add(topicPlayDetail);
+                        }
+                    }
+                    Integer insertBatch1 = topicPlayDetailService.getInsertBatch(topicPlayDetails);
+                    if (insertBatch1>0){
+                        log.info("玩家题目明细表插入成功");
+                    }else{
+                        log.info("玩家题目明细表插入失败");
+                    }
+                }
             }
             // 根据玩家的Id,所有的题目都插入到了玩家题目明细表,取出玩家游历建筑表的playerBuildingId1
             playerBuildingId playerBuildingId = playerBuildingIdService.getPlayerBuildingId(playerId);
