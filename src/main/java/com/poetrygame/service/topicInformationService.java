@@ -17,4 +17,16 @@ public interface topicInformationService {
     String getTopicContent(Long topicId);
 
     Integer getTopicSum();
+
+    Integer topicLevelOne();
+    Integer topicLevelTwo();
+    Integer topicLevelThree();
+
+    List<Integer> getTopicLevelOneCount();
+    List<Integer> getTopicLevelTwoCount();
+    List<Integer> getTopicLevelThreeCount();
+
+    List<Integer> getTopicLevelOneSelect(Integer differTopic);
+    List<Integer> getTopicLevelTwoSelect(Integer differTopic);
+    List<Integer> getTopicLevelThreeSelect(Integer differTopic);
 }

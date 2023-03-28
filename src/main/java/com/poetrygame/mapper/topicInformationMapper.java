@@ -20,4 +20,16 @@ public interface topicInformationMapper {
     String topicContent(Long topicId);
 
     Integer topicSum();
+
+    Integer topicLevelOne();
+    Integer topicLevelTwo();
+    Integer topicLevelThree();
+
+    List<Integer> topicLevelOneCount();
+    List<Integer> topicLevelTwoCount();
+    List<Integer> topicLevelThreeCount();
+
+    List<Integer> topicLevelOneSelect(Integer differTopic);
+    List<Integer> topicLevelTwoSelect(Integer differTopic);
+    List<Integer> topicLevelThreeSelect(Integer differTopic);
 }

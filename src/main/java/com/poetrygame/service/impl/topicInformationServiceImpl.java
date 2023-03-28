@@ -35,4 +35,49 @@ public class topicInformationServiceImpl implements topicInformationService {
     public Integer getTopicSum() {
         return topicInformationMapper.topicSum();
     }
+
+    @Override
+    public Integer topicLevelOne() {
+        return topicInformationMapper.topicLevelOne();
+    }
+
+    @Override
+    public Integer topicLevelTwo() {
+        return topicInformationMapper.topicLevelTwo();
+    }
+
+    @Override
+    public Integer topicLevelThree() {
+        return topicInformationMapper.topicLevelThree();
+    }
+
+    @Override
+    public List<Integer> getTopicLevelOneCount() {
+        return topicInformationMapper.topicLevelOneCount();
+    }
+
+    @Override
+    public List<Integer> getTopicLevelTwoCount() {
+        return topicInformationMapper.topicLevelTwoCount();
+    }
+
+    @Override
+    public List<Integer> getTopicLevelThreeCount() {
+        return topicInformationMapper.topicLevelThreeCount();
+    }
+
+    @Override
+    public List<Integer> getTopicLevelOneSelect(Integer differTopic) {
+        return topicInformationMapper.topicLevelOneSelect(differTopic);
+    }
+
+    @Override
+    public List<Integer> getTopicLevelTwoSelect(Integer differTopic) {
+        return topicInformationMapper.topicLevelTwoSelect(differTopic);
+    }
+
+    @Override
+    public List<Integer> getTopicLevelThreeSelect(Integer differTopic) {
+        return topicInformationMapper.topicLevelThreeSelect(differTopic);
+    }
 }

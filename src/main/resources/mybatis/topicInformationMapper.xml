@@ -31,4 +31,103 @@
             tbl_topic_information.topic_id = #{topicId}
     </select>
 
+    <!-- 查询难度为1的题目数量-->
+    <select id="topicLevelOne" resultType="Integer">
+        SELECT
+            count(*)
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 1
+    </select>
+
+    <!-- 查询难度为1的题目id-->
+    <select id="topicLevelOneCount" resultType="Integer">
+        SELECT
+            topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 1
+        ORDER BY
+            rand()
+    </select>
+    <!-- 查询难度为2的题目数量-->
+    <select id="topicLevelTwo" resultType="Integer">
+        SELECT
+            count(*)
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 2
+    </select>
+
+    <!-- 查询难度为2的题目id-->
+    <select id="topicLevelTwoCount" resultType="Integer">
+        SELECT
+            topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 2
+        ORDER BY
+            rand()
+    </select>
+    <!-- 查询难度为3的题目数量-->
+    <select id="topicLevelThree" resultType="Integer">
+        SELECT
+            count(*)
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 3
+    </select>
+    <!-- 查询难度为3的题目id-->
+    <select id="topicLevelThreeCount" resultType="Integer">
+        SELECT
+            topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 3
+        ORDER BY
+            rand()
+    </select>
+    
+    <!-- 查询指定题目数量(级别为1)-->
+    <select id="topicLevelOneSelect" resultType="Integer">
+        SELECT
+            topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 1
+        ORDER BY
+            rand()
+        LIMIT #{differTopic}
+    </select>
+    <!-- 查询指定题目数量(级别为2)-->
+    <select id="topicLevelTwoSelect" resultType="Integer">
+        SELECT
+            topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 2
+        ORDER BY
+            rand()
+        LIMIT #{differTopic}
+    </select>
+    <!-- 查询指定题目数量(级别为3) -->
+    <select id="topicLevelThreeSelect" resultType="Integer">
+        SELECT
+            topic_id
+        FROM
+            poetry_game.tbl_topic_information
+        WHERE
+            hard_level = 3
+        ORDER BY
+            rand()
+        LIMIT #{differTopic}
+    </select>
 </mapper>

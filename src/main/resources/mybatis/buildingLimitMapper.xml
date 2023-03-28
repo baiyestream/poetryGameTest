@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.poetrygame.mapper.dtoMapper.buildingLimitMapper">
+
+    <resultMap id="buildingLimitMapper" type="com.poetrygame.dto.getTopic.buildingLimit">
+        <result property="hardLevel" column="hard_level"/>
+        <result property="countryId" column="country_id"/>
+        <result property="countryCityId" column="country_city_id"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="cityBuildingId" column="city_building_id"/>
+        <result property="topicLimit" column="topic_limit"/>
+    </resultMap>
+
+    <!-- 查出城市建筑关联表的主键id和每一座建筑所容纳的题目数-->
+    <select id="buildingLimitOneTest" resultMap="buildingLimitMapper">
+        SELECT
+            t1.city_building_id,
+            t1.topic_limit
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_country_map.country_id,
+                    tbl_country_and_city.country_city_id,
+                    tbl_city_and_building.building_id,
+                    tbl_building.topic_limit,
+                    tbl_city_and_building.city_building_id
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+    </select>
+
+    <select id="buildingLimitOne" resultMap="buildingLimitMapper">
+        SELECT
+            t1.city_building_id,
+            t1.topic_limit
+        FROM
+            (
+                SELECT
+                    tbl_building.topic_limit,
+                    tbl_city_and_building.city_building_id
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+    </select>
+
+    <!--难度级别为1的地图上所需要的题目数-->
+    <select id="buildingLimitTwoTest" resultMap="buildingLimitMapper" >
+        SELECT
+            sum( t1.topic_limit ) AS levelOneTotal
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_country_map.country_id,
+                    tbl_country_and_city.country_city_id,
+                    tbl_city_and_building.building_id,
+                    tbl_building.topic_limit,
+                    tbl_city_and_building.city_building_id
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+        WHERE
+            t1.hard_level =1
+    </select>
+
+    <select id="buildingLimitTwo"  resultType="Integer">
+        SELECT
+            sum( t1.topic_limit ) AS levelOneTotal
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_building.topic_limit
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+        WHERE
+            t1.hard_level =1
+    </select>
+
+    <!-- 难度级别为2的地图上所需要的题目数-->
+    <select id="buildingLimitThreeTest" resultMap="buildingLimitMapper">
+        SELECT
+            sum( t1.topic_limit ) AS levelTwoTotal
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_country_map.country_id,
+                    tbl_country_and_city.country_city_id,
+                    tbl_city_and_building.building_id,
+                    tbl_building.topic_limit
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+        WHERE
+            t1.hard_level = 2
+    </select>
+
+    <select id="buildingLimitThree" resultType="Integer">
+        SELECT
+            sum( t1.topic_limit ) AS levelTwoTotal
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_building.topic_limit
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+        WHERE
+            t1.hard_level = 2
+    </select>
+
+    <!-- 难度级别为3的地图上所需要的题目数-->
+    <select id="buildingLimitFour" resultType="Integer">
+        SELECT
+            sum( t1.topic_limit ) AS levelThreeTotal
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_building.topic_limit
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+        WHERE
+            t1.hard_level = 3
+    </select>
+
+    <select id="buildingLimitFourTest" resultMap="buildingLimitMapper">
+        SELECT
+            sum( t1.topic_limit ) AS levelThreeTotal
+        FROM
+            (
+                SELECT
+                    tbl_country_map.hard_level,
+                    tbl_country_map.country_id,
+                    tbl_country_and_city.country_city_id,
+                    tbl_city_and_building.building_id,
+                    tbl_building.topic_limit
+                FROM
+                    tbl_country_map
+                        LEFT JOIN tbl_country_and_city ON tbl_country_and_city.country_id = tbl_country_map.country_id
+                        LEFT JOIN tbl_city_and_building ON tbl_city_and_building.country_city_id = tbl_country_and_city.country_city_id
+                        LEFT JOIN tbl_building ON tbl_building.building_id = tbl_city_and_building.building_id
+                WHERE
+                    tbl_country_map.`status` = 2
+            ) AS t1
+        WHERE
+            t1.hard_level = 3
+    </select>
+
+</mapper>
