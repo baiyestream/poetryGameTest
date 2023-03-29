@@ -49,5 +49,10 @@ public class topicPlayDetailServiceImpl extends ServiceImpl<topicPlayDetailMappe
         return topicPlayDetailMapper.undoneCount(playerId);
     }
 
+    @Override
+    public Integer getCumulativeAnswers(Long playerId) {
+        return topicPlayDetailMapper.cumulativeAnswers(playerId);
+    }
+
 
 }

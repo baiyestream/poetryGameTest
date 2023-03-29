@@ -111,6 +111,7 @@ public class PlayInformationController {
         PlayerInformation playerInformation = new PlayerInformation();
         playerInformation.setWeixinId(openId);
         playerInformation.setRegisteTime(date);
+        playerInformation.setActiveValue(0);
         Integer lifeLimit = workArgsService.getLifeLimit();
         playerInformation.setLifeLimit(lifeLimit);
         playerInformation.setLifeCount(lifeLimit);
@@ -144,6 +145,8 @@ public class PlayInformationController {
         // exitTime为null证明玩家为第一次玩游戏
         if(exitTime == null){
             PlayerInformation lifeInformation = playerInformationService.getLifeInformation(openId);
+            // 活跃度+1
+            playerInformationService.getAddActiveValue(openId);
             // openId
             String openId1 = lifeInformation.getWeixinId();
             // 体力值
@@ -162,6 +165,8 @@ public class PlayInformationController {
                     "lifeResumeOnline:游戏内每多少分钟恢复一点体力");
         }
         PlayerInformation lifeInformation = playerInformationService.getLifeInformation(openId);
+        // 活跃度+1
+        playerInformationService.getAddActiveValue(openId);
         // openId
         String openId1 = lifeInformation.getWeixinId();
         // 体力值

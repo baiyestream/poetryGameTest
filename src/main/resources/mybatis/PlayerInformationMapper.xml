@@ -27,8 +27,8 @@
 
     <!-- 测试:登录接口 -->
     <insert id="insertTest" parameterType="com.poetrygame.pojo.PlayerInformation">
-        insert into poetry_game.tbl_player_information(weixin_id,registe_time,life_count,life_limit)
-        values (#{weixinId},#{registeTime},#{lifeCount},#{lifeLimit})
+        insert into poetry_game.tbl_player_information(weixin_id,registe_time,life_count,life_limit,active_value)
+        values (#{weixinId},#{registeTime},#{lifeCount},#{lifeLimit},#{activeValue})
     </insert>
 
     <!-- 测试：查询openId返回给前端 -->
@@ -41,6 +41,13 @@
         set alias_name = #{aliasName}
         where weixin_id= #{weixinId}
     </update>
+
+    <!-- 增加活跃次数 -->
+    <update id="addActiveValue" parameterType="com.poetrygame.pojo.PlayerInformation">
+        update poetry_game.tbl_player_information
+        set active_value = active_value + 1
+        where weixin_id=#{weixinId}
+    </update>
     
     <select id="lifeInformation" resultMap="PlayInformationMapper">
         select
@@ -51,6 +58,26 @@
             poetry_game.tbl_player_information
         where
             tbl_player_information.weixin_id = #{weixinId}
+    </select>
+
+    <!-- 查询活跃次数-->
+    <select id="playerInformationOne" parameterType="com.poetrygame.pojo.PlayerInformation" resultType="Integer">
+        SELECT
+            tbl_player_information.active_value
+        FROM
+            poetry_game.tbl_player_information
+        WHERE
+            player_id = #{playerId}
+    </select>
+
+    <!-- 查询注册时间-->
+    <select id="playerInformationTwo" parameterType="com.poetrygame.pojo.PlayerInformation" resultType="java.util.Date">
+        SELECT
+            tbl_player_information.registe_time
+        FROM
+            poetry_game.tbl_player_information
+        WHERE
+            player_id = #{playerId}
     </select>
 
 

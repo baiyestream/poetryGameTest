@@ -3,6 +3,8 @@ package com.poetrygame.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.poetrygame.pojo.PlayerInformation;
 
+import java.util.Date;
+
 /**
  * @Author: zzw
  * @Date: 2022/12/13
@@ -21,6 +23,10 @@ public interface PlayerInformationService extends IService<PlayerInformation> {
     int getSaveAliasName(String aliasName,String weixinId);
 
     PlayerInformation getLifeInformation(String weixinId);
+
+    Integer getPlayerInformationOne(Long playerId);
+    Date getPlayerInformationTwo(Long playerId);
+    Integer getAddActiveValue(String weixinId);
 
 
 

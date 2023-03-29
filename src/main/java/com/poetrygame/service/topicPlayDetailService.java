@@ -25,6 +25,7 @@ public interface topicPlayDetailService extends IService<topicPlayDetail> {
 
     // 查询玩家是否完成所有题目
     Integer getUndoneCount(Long playerId);
+    Integer getCumulativeAnswers(Long playerId);
 
 
 }

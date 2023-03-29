@@ -26,5 +26,7 @@ public interface topicPlayDetailMapper extends BaseMapper<topicPlayDetail> {
 
     // 查询玩家是否完成所有题目
     Integer undoneCount(Long playerId);
+    // 累计答题
+    Integer cumulativeAnswers(Long playerId);
 
 }

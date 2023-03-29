@@ -7,6 +7,7 @@ import com.poetrygame.service.PlayerInformationService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * @Author: zzw
@@ -47,7 +48,20 @@ public class PlayerInformationServiceImpl extends ServiceImpl<PlayInformationMap
         return playInformationMapper.lifeInformation(weixinId);
     }
 
+    @Override
+    public Integer getPlayerInformationOne(Long playerId) {
+        return playInformationMapper.playerInformationOne(playerId);
+    }
 
+    @Override
+    public Date getPlayerInformationTwo(Long playerId) {
+        return playInformationMapper.playerInformationTwo(playerId);
+    }
+
+    @Override
+    public Integer getAddActiveValue(String weixinId) {
+        return playInformationMapper.addActiveValue(weixinId);
+    }
 
 
 }

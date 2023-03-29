@@ -47,9 +47,9 @@
             tbl_player_building.player_id = #{playerId}
     </select>
 
-    <!-- 该玩家没有玩过的国家id,返回数组形式 -->
+    <!-- dd该玩家没有玩过的国家id,返回数组形式 -->
     <!-- 用该数组filter应该玩的总城市数组,获得已经玩过的国家数 -->
-    <select id="travelInformationFour" resultType="list">
+    <select id="travelInformationFour" resultType="Integer">
         SELECT DISTINCT
             tbl_country_and_city.country_id
         FROM
@@ -61,8 +61,8 @@
           AND tbl_player_building.player_id = #{playerId}
     </select>
 
-    <!-- 该玩家应该玩的总国家数组 -->
-    <select id="travelInformationFive" resultType="list">
+    <!-- dd该玩家应该玩的总国家数组 -->
+    <select id="travelInformationFive" resultType="Integer">
         SELECT DISTINCT
             tbl_country_and_city.country_id
         FROM
@@ -73,9 +73,9 @@
             tbl_player_building.player_id = #{playerId}
     </select>
 
-    <!-- 该玩家没有玩过的城市id,返回数组形式 -->
+    <!-- dd该玩家没有玩过的城市id,返回数组形式 -->
     <!-- 用该数组filter应该玩的总城市数组,获得已经玩过的城市数 -->
-    <select id="travelInformationSix" resultType="list">
+    <select id="travelInformationSix" resultType="Integer">
         SELECT DISTINCT
             tbl_city_and_building.city_id
         FROM
@@ -87,8 +87,8 @@
           AND tbl_player_building.player_id = #{playerId}
     </select>
 
-    <!-- 该玩家应该玩的总城市数组-->
-    <select id="travelInformationSeven" resultType="list">
+    <!-- dd该玩家应该玩的总城市数组-->
+    <select id="travelInformationSeven" resultType="Integer">
         SELECT DISTINCT
             tbl_city_and_building.city_id
         FROM
